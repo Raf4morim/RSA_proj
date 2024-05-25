@@ -5,7 +5,7 @@ def run_script(script_name):
     subprocess.run(["python3", script_name])
 
 # List of scripts to run
-scripts = ["ambulance.py", "violating_car.py"]
+scripts = ["ambulance.py", "front_car.py", "violating_car.py"]
 
 # Create a thread for each script
 threads = []

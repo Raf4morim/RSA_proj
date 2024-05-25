@@ -34,10 +34,12 @@ def on_connect(client, userdata, flags, rc, properties):
 
 # É chamada automaticamente sempre que recebe uma mensagem nos tópicos subscritos em cima
 def on_message(client, userdata, msg):
-    log_message = 'Received DENM alert because of violation!'
-    log_to_file(other_cars_log_file, log_message)
-
     message = msg.payload.decode('utf-8')
+    obj = json.loads(message)
+
+    if obj["fields"]["denm"]["situation"]["eventType"]["causeCode"] == 99:
+        log_message = 'Received DENM alert because of violation!'
+        log_to_file(other_cars_log_file, log_message)
     
     # print('Topic: ' + msg.topic)
     # print('Message' + message)
