@@ -18,12 +18,14 @@ def generate_coordinates(starting_point, speed, time_interval, num_points, beari
 starting_points = [
     Point(40.748817, -73.985428),  # ambulance
     Point(40.74878097988277,-73.985428),  # violating car (4 meters behind the ambulance)
-    Point(40.75241901058529,-73.985428)  # car in front (400 meters ahead)
+    Point(40.75241901058529,-73.985428),  # car in front (400 meters ahead)
+    Point(40.746989, -73.985428),  # car in back (300 meters behind the ambulance)
+    Point(40.751645, -73.985428)   # car coming from opposite direction (300 meters ahead)
 ]
 
-bearings = [0, 0, 0]
+bearings = [0, 0, 0, 0, 180]
 
-speeds = [70, 70, 40]
+speeds = [70, 70, 40, 70, 70]
 
 num_points = 100  
 messsage_interval = 0.5
@@ -32,6 +34,8 @@ messsage_interval = 0.5
 emergency_vehicle_coordinates = generate_coordinates(starting_points[0], speeds[0], messsage_interval, num_points, bearings[0])
 violating_car_coordinates = generate_coordinates(starting_points[1], speeds[1], messsage_interval, num_points, bearings[1])
 car_in_front_coordinates = generate_coordinates(starting_points[2], speeds[2], messsage_interval, num_points, bearings[2])
+car_in_back_coordinates = generate_coordinates(starting_points[3], speeds[3], messsage_interval, num_points, bearings[3])
+car_opposite_coordinates = generate_coordinates(starting_points[4], speeds[4], messsage_interval, num_points, bearings[4])
 
 # Save coordinates to CSV files
 with open('emergencyVehicleCoordinates.csv', mode='w', newline='') as file:
@@ -52,3 +56,14 @@ with open('violatingCarCoordinates.csv', mode='w', newline='') as file:
     for point in violating_car_coordinates:
         writer.writerow([point.latitude, point.longitude])
 
+with open('carInBack.csv', mode='w', newline='') as file:
+    writer = csv.writer(file)
+    writer.writerow(["latitude", "longitude"])
+    for point in car_in_back_coordinates:
+        writer.writerow([point.latitude, point.longitude])
+
+with open('carOppositeCoordinates.csv', mode='w', newline='') as file:
+    writer = csv.writer(file)
+    writer.writerow(["latitude", "longitude"])
+    for point in car_opposite_coordinates:
+        writer.writerow([point.latitude, point.longitude])

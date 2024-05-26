@@ -10,7 +10,7 @@
     "driveDirection": "FORWARD",
     "emergencyBrake": true,
     "gasPedal": false,
-    "heading": 3601,
+    "heading": 0,
     "headingConf": 127,
     "latitude": 40.0000000,
     "length": 10.0,
@@ -19,8 +19,11 @@
     "semiMajorOrient": 3601,
     "semiMinorConf": 4095,
     "specialVehicle": {
-        "publicTransportContainer": {
-            "embarkationStatus": false
+        "emergencyContainer": {
+            "lightBarSirenInUse": {
+                "lightBarActivated": true,
+                "sirenActivated": true
+            }
         }
     },
     "speed": 16383,

@@ -107,11 +107,32 @@ def on_message(client, userdata, msg):
         else:
             ambulance_heading = previous_ambulance_heading
         previous_ambulance_coordinates = (lat,lon)
-
     else:
         other_car_coordinates = (lat, lon)
 
         if ambulance_coordinates is not None and other_car_coordinates is not None:
+            #if is_in_front(ambulance_coordinates[0], ambulance_coordinates[1], ambulance_heading, other_car_coordinates[0], other_car_coordinates[1]):
+            #distance = haversine_distance(other_car_coordinates[0], other_car_coordinates[1], ambulance_coordinates[0], ambulance_coordinates[1])
+            
+            #log_message = 'CAR IN FRONT Distance: ' + str(distance) + ' km'
+            #log_to_file(ambulance_log_file, log_message)
+
+            #if distance < 0.4: # 200 meters
+            log_message = 'Cars around! Sending DENM...'
+            log_to_file(ambulance_log_file, log_message)
+
+            f = open('in_denm_ambulance.json')
+            swerve_alert = json.load(f)
+            swerve_alert["management"]["eventPosition"]["latitude"] = ambulance_coordinates[0]
+            swerve_alert["management"]["eventPosition"]["longitude"] = ambulance_coordinates[1]
+            swerve_alert = json.dumps(swerve_alert)
+
+            # TODO - get station ID from the front cars
+            # TODO - if for this station ID, the alert has already been sent, don't send it again
+
+            client.publish("vanetza/in/denm",swerve_alert)
+            f.close()
+            
             if is_behind(ambulance_coordinates[0], ambulance_coordinates[1], ambulance_heading, other_car_coordinates[0], other_car_coordinates[1]):
                 # Comparar coordenadas recebidas com coordenadas do ficheiro CSV
                 distance = haversine_distance(other_car_coordinates[0], other_car_coordinates[1], ambulance_coordinates[0], ambulance_coordinates[1])
@@ -139,27 +160,7 @@ def on_message(client, userdata, msg):
                     f.close()
                     violation_count = 0
 
-            if is_in_front(ambulance_coordinates[0], ambulance_coordinates[1], ambulance_heading, other_car_coordinates[0], other_car_coordinates[1]):
-                #distance = haversine_distance(other_car_coordinates[0], other_car_coordinates[1], ambulance_coordinates[0], ambulance_coordinates[1])
-                
-                #log_message = 'CAR IN FRONT Distance: ' + str(distance) + ' km'
-                #log_to_file(ambulance_log_file, log_message)
-
-                #if distance < 0.4: # 200 meters
-                log_message = 'Car is in front! Sending DENM...'
-                log_to_file(ambulance_log_file, log_message)
-
-                f = open('in_denm_ambulance.json')
-                swerve_alert = json.load(f)
-                swerve_alert["management"]["eventPosition"]["latitude"] = ambulance_coordinates[0]
-                swerve_alert["management"]["eventPosition"]["longitude"] = ambulance_coordinates[1]
-                swerve_alert = json.dumps(swerve_alert)
-
-                # TODO - get station ID from the front cars
-                # TODO - if for this station ID, the alert has already been sent, don't send it again
-
-                client.publish("vanetza/in/denm",swerve_alert)
-                f.close()
+            
 
 # Generate CAMs with coordinates in emergencyVehicleCoordinates.csv
 def generate():
