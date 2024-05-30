@@ -20,12 +20,27 @@ def get_coordinates():
         print(f"Error fetching coordinates from the database: {e}")
         return []
 
+@app.route('/violations')
+def get_violations():
+    try:
+        db = sql.connect('obu.db')
+        cursor = db.cursor()
+        cursor.execute("SELECT * FROM violations")
+        data = cursor.fetchall()
+        db.close()
+        print(data)
+        return data
+    except Exception as e:
+        print(f"Error fetching violations from the database: {e}")
+        return []
+
 @app.route('/')
 def index():
     try:
         coordinates = get_coordinates()
+        violations = get_violations()
         print("Coordinates fetched from DB:", coordinates)  # Debug print
-        return render_template('index.html', coordinates=coordinates)
+        return render_template('index.html', coordinates=coordinates, violations=violations)
     except Exception as e:
         print(f"Error rendering template: {e}")
         return "An error occurred", 500

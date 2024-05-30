@@ -28,7 +28,10 @@ var obuIconViolatingCar = L.icon({
 // Array of markers
 var markers = [];
 
-setInterval(obuCall, 1000);
+let popUpFlag = 0;
+
+setInterval(obuCall, 500);
+setInterval(obuViolation, 500);
 
 // Modify the obuCall function to track the ambulance marker and adjust map view
 function obuCall() {
@@ -61,15 +64,33 @@ function obuCall() {
             });
 
             // If ambulance marker exists, adjust map view to fit all markers
-            if (ambulanceBounds.length > 0) {
-                // Create a LatLngBounds object from ambulanceBounds
-                var bounds = L.latLngBounds(ambulanceBounds);
-                // Fit the map to the bounds of the ambulance marker
-                map.fitBounds(bounds, { padding: [60, 60], minZoom: 20 }); // You can adjust padding as needed
-            }
+            // if (ambulanceBounds.length > 0) {
+            //     // Create a LatLngBounds object from ambulanceBounds
+            //     var bounds = L.latLngBounds(ambulanceBounds);
+            //     // Fit the map to the bounds of the ambulance marker
+            //     map.fitBounds(bounds, { padding: [60, 60], minZoom: 20 }); // You can adjust padding as needed
+            // }
         },
         error: function(xhr, status, error) {
             console.error('Error:', status, xhr.responseText);
+        }
+    });
+}
+
+function obuViolation() {
+    $.ajax({
+        url: '/violations',
+        type: 'GET',
+        dataType: 'json',
+        success: function(response) {
+            // See if data is not empty
+            // show popup with data[2] message
+            console.log(response);
+
+            if (response[0][0] == "Car behind the ambulance" && popUpFlag == 0) {
+                alert(response[0][0]);
+                popUpFlag = 1;
+            }
         }
     });
 }

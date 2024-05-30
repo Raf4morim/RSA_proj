@@ -1,10 +1,19 @@
 import json
 import paho.mqtt.client as mqtt
 import threading
+import sqlite3 as sql
 from time import sleep
 import csv
 import math
     
+# Function to update coordinates in the database
+def update_violations(violation_type, ip):
+    db = sql.connect('../obu.db')
+    cursor = db.cursor()
+    cursor.execute("UPDATE violations SET violation_type = ? WHERE ip = ?", (violation_type, ip))
+    db.commit()
+    db.close()
+
 # Read coordinates
 def read_coordinates(csv_file):
     coordinates = []
@@ -132,6 +141,8 @@ def on_message(client, userdata, msg):
                 
                 if violation_count >= 10:
                     # TODO - Modify DENM message
+
+                    update_violations("Car behind the ambulance", "192.168.98.30")
 
                     f = open('in_denm_ambulance2.json')
                     violation_alert = json.load(f)
