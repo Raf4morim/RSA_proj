@@ -1,6 +1,6 @@
 var map = L.map('map').setView([40.748817, -73.985428], 16);
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(map);
 
@@ -10,7 +10,6 @@ var obuIconFrontCar = L.icon({
     iconAnchor: [18, 39],
     popupAnchor: [10, -35]
 });
-
 
 var obuIconAmbulance = L.icon({
     iconUrl: "static/ambulance.png",
@@ -26,44 +25,79 @@ var obuIconViolatingCar = L.icon({
     popupAnchor: [10, -35]
 });
 
-//array de markers
+// Array of markers
 var markers = [];
 
 setInterval(obuCall, 1000);
 
+// Modify the obuCall function to track the ambulance marker and adjust map view
 function obuCall() {
-    $(document).ready(function(){
-        $.ajax({
-            url: '/get_coordinates',  // Update the URL to match your Flask route
-            type: 'GET',
-            dataType: 'json',  // Specify that the response is JSON
-            success: function(response){
-                markers.forEach(delMarker);
+    $.ajax({
+        url: '/get_coordinates',
+        type: 'GET',
+        dataType: 'json',
+        success: function(response) {
+            // Clear existing markers
+            markers.forEach(delMarker);
 
-                let i = 0;
-                let obuIcon;
-                response.forEach(function(data) {
-                    if (data[0] !== null && data[1] !== null) {
-                        if (data[2] == "192.168.98.30")
-                            obuIcon = obuIconFrontCar
-                        if (data[2] == "192.168.98.20")
-                            obuIcon = obuIconAmbulance
-                        if (data[2] == "192.168.98.10")
-                            obuIcon = obuIconViolatingCar
-                        markers[i] = L.marker([data[0], data[1]], {icon: obuIcon}).addTo(map)
-                            .bindTooltip(data[2], {permanent: false});
-                        i++;
+            let i = 0;
+            let obuIcon;
+            let ambulanceBounds = []; // Array to store ambulance marker positions
+            response.forEach(function(data) {
+                if (data[0] !== null && data[1] !== null) {
+                    if (data[2] == "192.168.98.30")
+                        obuIcon = obuIconFrontCar;
+                    else if (data[2] == "192.168.98.20") {
+                        obuIcon = obuIconAmbulance;
+                        // Store the position of the ambulance marker
+                        ambulanceBounds.push([data[0], data[1]]);
                     }
-                });
-            },
-            error: function(xhr, status, error) {
-                console.error('Error:', status, xhr.responseText);
+                    else if (data[2] == "192.168.98.10")
+                        obuIcon = obuIconViolatingCar;
+                    markers[i] = L.marker([data[0], data[1]], {icon: obuIcon}).addTo(map)
+                        .bindTooltip(data[2], {permanent: false});
+                    i++;
+                }
+            });
+
+            // If ambulance marker exists, adjust map view to fit all markers
+            if (ambulanceBounds.length > 0) {
+                // Create a LatLngBounds object from ambulanceBounds
+                var bounds = L.latLngBounds(ambulanceBounds);
+                // Fit the map to the bounds of the ambulance marker
+                map.fitBounds(bounds, { padding: [60, 60], minZoom: 20 }); // You can adjust padding as needed
             }
-        });
+        },
+        error: function(xhr, status, error) {
+            console.error('Error:', status, xhr.responseText);
+        }
     });
 }
 
+// Function to add markers to the map
+function addMarker(latitude, longitude, icon, tooltipText) {
+    var marker = L.marker([latitude, longitude], { icon: icon }).addTo(map);
+    marker.bindTooltip(tooltipText).openTooltip(); // Bind tooltip to marker
+    marker.on('click', function(e) {
+        alert('Marker clicked!'); // Replace with your popup logic
+    });
+    markers.push(marker);
+}
+
+// Function to remove all markers from the map
+function clearMarkers() {
+    markers.forEach(function(marker) {
+        map.removeLayer(marker);
+    });
+    markers = [];
+}
 
 function delMarker(value, index, array){
-    map.removeLayer(value)
+    map.removeLayer(value);
 }
+
+var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
+
+socket.on('car_reaction', function(data) {
+    alert(data.message);
+});

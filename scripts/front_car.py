@@ -5,6 +5,12 @@ import math
 import threading
 from time import sleep
 import csv
+import sys
+import os
+from flask_socketio import SocketIO
+
+sys.path.append('..')
+from app import notify_car_reaction
 
 # Ler coordenadas do ficheiro CSV
 def read_coordinates(csv_file):
@@ -124,6 +130,7 @@ def on_message(client, userdata, msg):
                 position = determine_position(amb_lat, amb_lon, car_lat, car_lon, car_heading)
                 if position in ["Car on the same lane but in front", "Car on the opposite lane in front"]:
                     print('CAR SHOULD REACT')
+                    notify_car_reaction()
                     
 # Generate CAMs with coordinates in violatingCarCoordinates.csv
 def generate():

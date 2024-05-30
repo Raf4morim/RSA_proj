@@ -1,8 +1,10 @@
 from flask import Flask, render_template
 import sqlite3 as sql
 from obus_bd import create_obu_db
+from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
+socketio = SocketIO(app)
 
 @app.route('/get_coordinates')
 def get_coordinates():
@@ -27,7 +29,13 @@ def index():
     except Exception as e:
         print(f"Error rendering template: {e}")
         return "An error occurred", 500
+    
+
+def notify_car_reaction():
+    socketio.emit('car_reaction', {'message': 'Car should react'})
+
 
 if __name__ == '__main__':
     create_obu_db()
     app.run(debug=True)
+    socketio.run()
