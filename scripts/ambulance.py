@@ -4,7 +4,7 @@ import threading
 from time import sleep
 import csv
 import math
-
+    
 # Read coordinates
 def read_coordinates(csv_file):
     coordinates = []

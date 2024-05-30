@@ -3,6 +3,15 @@ import paho.mqtt.client as mqtt
 import threading
 from time import sleep
 import csv
+import sqlite3 as sql
+
+# Function to update coordinates in the database
+def update_coordinates(ip, latitude, longitude):
+    db = sql.connect('../obu.db')
+    cursor = db.cursor()
+    cursor.execute("UPDATE obu SET lat = ?, long = ? WHERE ip = ?", (latitude, longitude, ip))
+    db.commit()
+    db.close()
 
 # Ler coordenadas do ficheiro CSV
 def read_coordinates(csv_file):
@@ -22,6 +31,7 @@ def on_connect(client, userdata, flags, rc, properties):
     print("Connected with result code "+str(rc))
     #client.subscribe("vanetza/out/cam")
     client.subscribe("vanetza/out/denm")
+    client.subscribe("vanetza/in/cam")
     # ...
 
 
@@ -30,8 +40,14 @@ def on_message(client, userdata, msg):
     message = msg.payload.decode('utf-8')
     obj = json.loads(message)
 
-    if obj["fields"]["denm"]["situation"]["eventType"]["causeCode"] == 99:
-        print('CAR VIOLATION ALERT RECEIVED! DENM')
+    if "latitude" in obj and "longitude" in obj and "heading" in obj:
+        car_lat = obj["latitude"]
+        car_lon = obj["longitude"]
+        update_coordinates("192.168.98.10", car_lat, car_lon)
+
+    if "fields" in obj and "denm" in obj["fields"]:
+        if obj["fields"]["denm"]["situation"]["eventType"]["causeCode"] == 99:
+            print('CAR VIOLATION ALERT RECEIVED! DENM')
     
     # print('Topic: ' + msg.topic)
     # print('Message' + message)
