@@ -34,13 +34,28 @@ def get_violations():
         print(f"Error fetching violations from the database: {e}")
         return []
 
+@app.route('/frontCar')
+def get_frontCar():
+    try:
+        db = sql.connect('obu.db')
+        cursor = db.cursor()
+        cursor.execute("SELECT * FROM swerve")
+        data = cursor.fetchall()
+        db.close()
+        print(data)
+        return data
+    except Exception as e:
+        print(f"Error fetching frontCar from the database: {e}")
+        return []
+
 @app.route('/')
 def index():
     try:
         coordinates = get_coordinates()
         violations = get_violations()
+        frontCar = get_frontCar()
         print("Coordinates fetched from DB:", coordinates)  # Debug print
-        return render_template('index.html', coordinates=coordinates, violations=violations)
+        return render_template('index.html', coordinates=coordinates, violations=violations, frontCar=frontCar)
     except Exception as e:
         print(f"Error rendering template: {e}")
         return "An error occurred", 500

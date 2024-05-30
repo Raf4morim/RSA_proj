@@ -21,6 +21,13 @@ def read_coordinates(csv_file):
             coordinates.append((float(row['latitude']), float(row['longitude'])))
     return coordinates
 
+def update_frontCarMessage(swerve_type, ip):
+    db = sql.connect('../obu.db')
+    cursor = db.cursor()
+    cursor.execute("UPDATE swerve SET swerve_type = ? WHERE ip = ?", (swerve_type, ip))
+    db.commit()
+    db.close()
+
 # TODO - Modify to have all 4 possible cases of coordinates
 front_car_coordinates = read_coordinates('carInFrontCoordinates.csv')
 # front_car_coordinates = read_coordinates('carInBack.csv')
@@ -130,6 +137,7 @@ def on_message(client, userdata, msg):
                 position = determine_position(amb_lat, amb_lon, car_lat, car_lon, car_heading)
                 if position in ["Car on the same lane but in front", "Car on the opposite lane in front"]:
                     print('CAR SHOULD REACT')
+                    update_frontCarMessage("Car in front of ambulance swerve", "192.168.98.30")
                     notify_car_reaction()
                     
 # Generate CAMs with coordinates in violatingCarCoordinates.csv

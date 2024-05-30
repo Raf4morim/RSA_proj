@@ -33,6 +33,7 @@ let notificationClosed = false;
 
 setInterval(obuCall, 500);
 setInterval(obuViolation, 500);
+setInterval(obuFrontCar, 500)
 
 // Modify the obuCall function to track the ambulance marker and adjust map view
 function obuCall() {
@@ -93,6 +94,30 @@ function obuViolation() {
             }
         }
     });
+}
+
+function obuFrontCar() {
+    $.ajax({
+        url: '/frontCar',
+        type: 'GET',
+        dataType: 'json',
+        success: function(response) {
+            // See if data is not empty
+            // show popup with data[2] message
+            console.log(response);
+
+            if (response[0][0].includes("in front of ambulance swerve")) {
+                showNotificationSwerve(response[0][0]);
+            }
+        }
+    });
+}
+
+function showNotificationSwerve(message) {
+    var notification = document.getElementById('notificationSwerve');
+    var notificationMessage = document.getElementById('notification-messageSwerve');
+    notificationMessage.innerText = message;
+    notification.style.display = 'block';
 }
 
 function showNotification(message) {

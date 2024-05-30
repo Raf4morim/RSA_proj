@@ -24,6 +24,17 @@
             display: none;
             z-index: 1000;
         }
+        #notificationSwerve {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            padding: 15px;
+            background-color: rgba(0, 119, 255, 0.8);
+            color: white;
+            border-radius: 5px;
+            display: none;
+            z-index: 1000;
+        }
         #notification .close-btn {
             margin-left: 10px;
             cursor: pointer;
@@ -38,6 +49,9 @@
 <body>
     <h1>OBU Coordinates</h1>
     <div id="map"></div>
+    <div id="notificationSwerve" >
+        <span id="notification-messageSwerve"></span>
+    </div>
     <div id="notification">
         <span id="notification-message"></span>
         <button class="close-btn" onclick="closeNotification()">×</button>

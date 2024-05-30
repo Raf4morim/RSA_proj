@@ -140,7 +140,7 @@ def on_message(client, userdata, msg):
                     violation_count = 0
                 
                 if violation_count >= 10:
-                    update_violations(f"Car {stationID} behind the ambulance", "192.168.98.30")
+                    update_violations(f"Car {stationID} behind the ambulance", "192.168.98.10")
 
                     f = open('in_denm_ambulance2.json')
                     violation_alert = json.load(f)
