@@ -50,7 +50,7 @@ function obuCall() {
             let ambulanceBounds = []; // Array to store ambulance marker positions
             response.forEach(function(data) {
                 if (data[0] !== null && data[1] !== null) {
-                    if (data[2] == "192.168.98.30")
+                    if (data[2] == "192.168.98.30" || data[2] == "192.168.98.40")
                         obuIcon = obuIconFrontCar;
                     else if (data[2] == "192.168.98.20") {
                         obuIcon = obuIconAmbulance;

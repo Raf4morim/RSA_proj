@@ -21,15 +21,8 @@ def read_coordinates(csv_file):
             coordinates.append((float(row['latitude']), float(row['longitude'])))
     return coordinates
 
-def update_frontCarMessage(swerve_type, ip):
-    db = sql.connect('../obu.db')
-    cursor = db.cursor()
-    cursor.execute("UPDATE swerve SET swerve_type = ? WHERE ip = ?", (swerve_type, ip))
-    db.commit()
-    db.close()
-
 # TODO - Modify to have all 4 possible cases of coordinates
-front_car_coordinates = read_coordinates('carInFrontCoordinates.csv')
+front_car_coordinates = read_coordinates('carOppositeCoordinates.csv')
 # front_car_coordinates = read_coordinates('carInBack.csv')
 #front_car_coordinates = read_coordinates('carOppositeCoordinates.csv')
 idx = 0
@@ -116,12 +109,12 @@ def on_message(client, userdata, msg):
     obj = json.loads(message)
 
     if "latitude" in obj and "longitude" in obj and "heading" in obj:
-        if obj["stationID"] == 3:
-            #print("Received CAM from station 3")
+        if obj["stationID"] == 4:
+            #print("Received CAM from station 4")
             car_lat = obj["latitude"]
             car_lon = obj["longitude"]
             car_heading = obj["heading"]
-            update_coordinates("192.168.98.30", car_lat, car_lon)
+            update_coordinates("192.168.98.40", car_lat, car_lon)
 
     if "specialVehicle" in obj and "emergencyContainer" in obj["specialVehicle"]:
         if obj["specialVehicle"]["emergencyContainer"]["lightBarSirenInUse"]["lightBarActivated"] == True:
@@ -129,7 +122,7 @@ def on_message(client, userdata, msg):
             amb_lat = obj["latitude"]
             amb_lon = obj["longitude"]
             amb_heading = obj["heading"]
-            update_coordinates("192.168.98.20", amb_lat, amb_lon)
+            #update_coordinates("192.168.98.20", amb_lat, amb_lon)
 
     if "fields" in obj and "denm" in obj["fields"]:
         if obj["fields"]["denm"]["situation"]["eventType"]["causeCode"] == 95:
@@ -137,7 +130,6 @@ def on_message(client, userdata, msg):
                 position = determine_position(amb_lat, amb_lon, car_lat, car_lon, car_heading)
                 if position in ["Car on the same lane but in front", "Car on the opposite lane in front"]:
                     #print('CAR SHOULD REACT')
-                    update_frontCarMessage("Car in front of ambulance swerve", "192.168.98.30")
                     notify_car_reaction()
                     
 # Generate CAMs with coordinates in violatingCarCoordinates.csv
@@ -153,7 +145,7 @@ def generate():
     m = json.load(f)
     m["latitude"] = latitude
     m["longitude"] = longitude
-    m["stationID"] = 3
+    m["stationID"] = 4
     #m["heading"] = 180
 
     m = json.dumps(m)
@@ -164,7 +156,7 @@ def generate():
 client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
 client.on_connect = on_connect
 client.on_message = on_message
-client.connect("192.168.98.30", 1883, 60)
+client.connect("192.168.98.40", 1883, 60)
 
 threading.Thread(target=client.loop_forever).start()
 

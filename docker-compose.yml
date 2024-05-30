@@ -54,6 +54,23 @@ services:
       vanetzalan0:
         ipv4_address: 192.168.98.30  
 
+  obu_4:
+    hostname: obu_4
+    restart: always
+    image: code.nap.av.it.pt:5050/mobility-networks/vanetza:latest
+    cap_add:
+      - "NET_ADMIN"
+    environment:
+      - VANETZA_STATION_ID=4
+      - VANETZA_STATION_TYPE=5
+      - VANETZA_MAC_ADDRESS=6e:06:e0:03:00:04
+      - VANETZA_INTERFACE=br0
+      - VANETZA_CAM_PERIODICITY=0
+      - START_EMBEDDED_MOSQUITTO=true
+      - SUPPORT_MAC_BLOCKING=true
+    networks:
+      vanetzalan0:
+        ipv4_address: 192.168.98.40  
 networks:
   vanetzalan0:
     external: true
