@@ -29,6 +29,7 @@ var obuIconViolatingCar = L.icon({
 var markers = [];
 
 let popUpFlag = 0;
+let notificationClosed = false;
 
 setInterval(obuCall, 500);
 setInterval(obuViolation, 500);
@@ -87,12 +88,24 @@ function obuViolation() {
             // show popup with data[2] message
             console.log(response);
 
-            if (response[0][0] == "Car behind the ambulance" && popUpFlag == 0) {
-                alert(response[0][0]);
-                popUpFlag = 1;
+            if (!notificationClosed && response[0][0].includes("behind the ambulance") && popUpFlag == 0) {
+                showNotification(response[0][0]);
             }
         }
     });
+}
+
+function showNotification(message) {
+    var notification = document.getElementById('notification');
+    var notificationMessage = document.getElementById('notification-message');
+    notificationMessage.innerText = message;
+    notification.style.display = 'block';
+}
+
+function closeNotification() {
+    var notification = document.getElementById('notification');
+    notification.style.display = 'none';
+    notificationClosed = true;  // Set flag to prevent future notifications
 }
 
 // Function to add markers to the map

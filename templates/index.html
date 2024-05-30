@@ -13,12 +13,35 @@
         #map {
             height: 600px;
         }
+        #notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px;
+            background-color: rgba(255, 0, 0, 0.8);
+            color: white;
+            border-radius: 5px;
+            display: none;
+            z-index: 1000;
+        }
+        #notification .close-btn {
+            margin-left: 10px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
     <h1>OBU Coordinates</h1>
     <div id="map"></div>
-
+    <div id="notification">
+        <span id="notification-message"></span>
+        <button class="close-btn" onclick="closeNotification()">×</button>
+    </div>
     <script src="{{ url_for('static', filename='map.js') }}"></script>
 </body>
 </html>
