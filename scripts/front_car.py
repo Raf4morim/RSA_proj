@@ -1,16 +1,10 @@
+import sqlite3 as sql
 import json
 import paho.mqtt.client as mqtt
+import math
 import threading
 from time import sleep
 import csv
-import math
-
-open("front_car_log.txt", "w").close()
-other_cars_log_file = open("front_car_log.txt", "a")
-
-def log_to_file(log_file, message):
-    log_file.write(message + '\n')
-    log_file.flush()  # Ensure that the message is written immediately
 
 # Ler coordenadas do ficheiro CSV
 def read_coordinates(csv_file):
@@ -93,17 +87,18 @@ def on_connect(client, userdata, flags, rc, properties):
     client.subscribe("vanetza/in/cam")
     client.subscribe("vanetza/out/cam")
     client.subscribe("vanetza/out/denm")
-    
+
+
+# Function to update coordinates in the database
+def update_coordinates(ip, latitude, longitude):
+    db = sql.connect('../obu.db')
+    cursor = db.cursor()
+    cursor.execute("UPDATE obu SET lat = ?, long = ? WHERE ip = ?", (latitude, longitude, ip))
+    db.commit()
+    db.close()
+
 def on_message(client, userdata, msg):
     global amb_lat, amb_lon, amb_heading, car_lat, car_lon, car_heading
-    #log_message = 'Received DENM alert to swerve away!'
-    #log_to_file(other_cars_log_file, log_message)
-
-    # Receive CAMs and DENMs from the ambulance 
-    # 1. If special vehicle is emergency container with light bar siren in use, then extract coordinates and heading
-    # 2. Check with DENMs if the event type has cause code 95
-    # 3. If cause code is 95, realize algorithm with previous coordinates and heading to determine if the car has to swerve away
-
     message = msg.payload.decode('utf-8')
     obj = json.loads(message)
 
@@ -113,32 +108,23 @@ def on_message(client, userdata, msg):
             car_lat = obj["latitude"]
             car_lon = obj["longitude"]
             car_heading = obj["heading"]
+            update_coordinates("192.168.98.30", car_lat, car_lon)
 
-    # Start by analysing CAMs
     if "specialVehicle" in obj and "emergencyContainer" in obj["specialVehicle"]:
         if obj["specialVehicle"]["emergencyContainer"]["lightBarSirenInUse"]["lightBarActivated"] == True:
             print("Received CAM from emergency container with light bar siren in use")
             amb_lat = obj["latitude"]
             amb_lon = obj["longitude"]
             amb_heading = obj["heading"]
-
+            update_coordinates("192.168.98.20", amb_lat, amb_lon)
 
     if "fields" in obj and "denm" in obj["fields"]:
-        #print("Received DENM")
         if obj["fields"]["denm"]["situation"]["eventType"]["causeCode"] == 95:
-            #log_message = 'Received DENM alert to swerve away!'
-            #log_to_file(other_cars_log_file, log_message)
-
             if amb_lat is not None and amb_lon is not None and amb_heading is not None and car_lat is not None and car_lon is not None and car_heading is not None:
-                #distance = haversine_distance(amb_lat, amb_lon, car_lat, car_lon)
-                #print('Distance: ' + str(distance) + ' km')
                 position = determine_position(amb_lat, amb_lon, car_lat, car_lon, car_heading)
-                log_message = f'Position: {position}'
-                log_to_file(other_cars_log_file, log_message)
                 if position in ["Car on the same lane but in front", "Car on the opposite lane in front"]:
-                    log_message = 'Car should react!'
-                    log_to_file(other_cars_log_file, log_message)
-
+                    print('CAR SHOULD REACT')
+                    
 # Generate CAMs with coordinates in violatingCarCoordinates.csv
 def generate():
     global idx
@@ -154,9 +140,6 @@ def generate():
     m["longitude"] = longitude
     m["stationID"] = 3
     #m["heading"] = 180
-
-    log_message = 'Publishing CAM with coordinates: ' + str(latitude) + ', ' + str(longitude)
-    log_to_file(other_cars_log_file, log_message)
 
     m = json.dumps(m)
     client.publish("vanetza/in/cam",m)

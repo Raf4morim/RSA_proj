@@ -5,13 +5,6 @@ from time import sleep
 import csv
 import math
 
-open("ambulance_log.txt", "w").close()
-ambulance_log_file = open("ambulance_log.txt", "a")
-
-def log_to_file(log_file, message):
-    log_file.write(message + '\n')
-    log_file.flush()  # Ensure that the message is written immediately
-
 # Read coordinates
 def read_coordinates(csv_file):
     coordinates = []
@@ -94,8 +87,7 @@ def on_message(client, userdata, msg):
     stationID = obj["stationID"]
 
     #print('Received CAM from station ' + str(stationID) + ' with coordinates: ' + str(lat) + ', ' + str(lon))
-    log_message = 'Received CAM from station ' + str(stationID) + ' with coordinates: ' + str(lat) + ', ' + str(lon)
-    log_to_file(ambulance_log_file, log_message)
+
 
     # Station 2 is the ambulance
     if stationID == 2:
@@ -113,13 +105,9 @@ def on_message(client, userdata, msg):
         if ambulance_coordinates is not None and other_car_coordinates is not None:
             #if is_in_front(ambulance_coordinates[0], ambulance_coordinates[1], ambulance_heading, other_car_coordinates[0], other_car_coordinates[1]):
             #distance = haversine_distance(other_car_coordinates[0], other_car_coordinates[1], ambulance_coordinates[0], ambulance_coordinates[1])
-            
-            #log_message = 'CAR IN FRONT Distance: ' + str(distance) + ' km'
-            #log_to_file(ambulance_log_file, log_message)
 
             #if distance < 0.4: # 200 meters
-            log_message = 'Cars around! Sending DENM...'
-            log_to_file(ambulance_log_file, log_message)
+
 
             f = open('in_denm_ambulance.json')
             swerve_alert = json.load(f)
@@ -136,9 +124,6 @@ def on_message(client, userdata, msg):
             if is_behind(ambulance_coordinates[0], ambulance_coordinates[1], ambulance_heading, other_car_coordinates[0], other_car_coordinates[1]):
                 # Comparar coordenadas recebidas com coordenadas do ficheiro CSV
                 distance = haversine_distance(other_car_coordinates[0], other_car_coordinates[1], ambulance_coordinates[0], ambulance_coordinates[1])
-                
-                log_message = 'CAR BEHIND Distance: ' + str(distance) + ' km'
-                log_to_file(ambulance_log_file, log_message)
 
                 if distance < distance_threshold:
                     violation_count += 1
@@ -147,9 +132,6 @@ def on_message(client, userdata, msg):
                 
                 if violation_count >= 10:
                     # TODO - Modify DENM message
-
-                    log_message = 'Violation detected; Car following! Sending DENM...'
-                    log_to_file(ambulance_log_file, log_message)
 
                     f = open('in_denm_ambulance2.json')
                     violation_alert = json.load(f)
@@ -175,9 +157,6 @@ def generate():
     m = json.load(f)
     m["latitude"] = latitude
     m["longitude"] = longitude
-
-    log_message = 'Ambulance publishing CAM with coordinates: ' + str(latitude) + ', ' + str(longitude)
-    log_to_file(ambulance_log_file, log_message)
 
     m = json.dumps(m)
     client.publish("vanetza/in/cam",m)

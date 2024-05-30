@@ -4,13 +4,6 @@ import threading
 from time import sleep
 import csv
 
-open("violating_car_log.txt", "w").close()
-other_cars_log_file = open("violating_car_log.txt", "a")
-
-def log_to_file(log_file, message):
-    log_file.write(message + '\n')
-    log_file.flush()  # Ensure that the message is written immediately
-
 # Ler coordenadas do ficheiro CSV
 def read_coordinates(csv_file):
     coordinates = []
@@ -38,8 +31,7 @@ def on_message(client, userdata, msg):
     obj = json.loads(message)
 
     if obj["fields"]["denm"]["situation"]["eventType"]["causeCode"] == 99:
-        log_message = 'Received DENM alert because of violation!'
-        log_to_file(other_cars_log_file, log_message)
+        print('CAR VIOLATION ALERT RECEIVED! DENM')
     
     # print('Topic: ' + msg.topic)
     # print('Message' + message)
@@ -66,9 +58,6 @@ def generate():
     m = json.load(f)
     m["latitude"] = latitude
     m["longitude"] = longitude
-
-    log_message = 'Publishing CAM with coordinates: ' + str(latitude) + ', ' + str(longitude)
-    log_to_file(other_cars_log_file, log_message)
 
     m = json.dumps(m)
     client.publish("vanetza/in/cam",m)
