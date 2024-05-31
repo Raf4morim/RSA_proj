@@ -6,10 +6,10 @@ import csv
 import sqlite3 as sql
 
 # Function to update coordinates in the database
-def update_coordinates(ip, latitude, longitude):
+def update_coordinates(id, latitude, longitude):
     db = sql.connect('../obu.db')
     cursor = db.cursor()
-    cursor.execute("UPDATE obu SET lat = ?, long = ? WHERE ip = ?", (latitude, longitude, ip))
+    cursor.execute("UPDATE obu SET lat = ?, long = ? WHERE stationID = ?", (latitude, longitude, id))
     db.commit()
     db.close()
 
@@ -43,7 +43,8 @@ def on_message(client, userdata, msg):
     if "latitude" in obj and "longitude" in obj and "heading" in obj:
         car_lat = obj["latitude"]
         car_lon = obj["longitude"]
-        update_coordinates("192.168.98.10", car_lat, car_lon)
+        car_stationID = obj["stationID"]
+        update_coordinates(car_stationID, car_lat, car_lon)
 
     if "fields" in obj and "denm" in obj["fields"]:
         if obj["fields"]["denm"]["situation"]["eventType"]["causeCode"] == 99:

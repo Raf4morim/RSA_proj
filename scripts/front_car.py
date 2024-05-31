@@ -21,10 +21,19 @@ def read_coordinates(csv_file):
             coordinates.append((float(row['latitude']), float(row['longitude'])))
     return coordinates
 
-def update_frontCarMessage(swerve_type, ip):
+# Function to update coordinates in the database
+def update_frontCarMessage(violation_type, id):
     db = sql.connect('../obu.db')
     cursor = db.cursor()
-    cursor.execute("UPDATE swerve SET swerve_type = ? WHERE ip = ?", (swerve_type, ip))
+    cursor.execute("UPDATE swerve SET swerve_type = ? WHERE stationID = ?", (violation_type, id))
+    db.commit()
+    db.close()
+
+# Function to update coordinates in the database
+def update_coordinates(id, latitude, longitude):
+    db = sql.connect('../obu.db')
+    cursor = db.cursor()
+    cursor.execute("UPDATE obu SET lat = ?, long = ? WHERE stationID = ?", (latitude, longitude, id))
     db.commit()
     db.close()
 
@@ -101,15 +110,6 @@ def on_connect(client, userdata, flags, rc, properties):
     client.subscribe("vanetza/out/cam")
     client.subscribe("vanetza/out/denm")
 
-
-# Function to update coordinates in the database
-def update_coordinates(ip, latitude, longitude):
-    db = sql.connect('../obu.db')
-    cursor = db.cursor()
-    cursor.execute("UPDATE obu SET lat = ?, long = ? WHERE ip = ?", (latitude, longitude, ip))
-    db.commit()
-    db.close()
-
 def on_message(client, userdata, msg):
     global amb_lat, amb_lon, amb_heading, car_lat, car_lon, car_heading
     message = msg.payload.decode('utf-8')
@@ -120,7 +120,7 @@ def on_message(client, userdata, msg):
             car_lat = obj["latitude"]
             car_lon = obj["longitude"]
             car_heading = obj["heading"]
-            update_coordinates("192.168.98.30", car_lat, car_lon)
+            update_coordinates(3, car_lat, car_lon)
 
     if "specialVehicle" in obj and "emergencyContainer" in obj["specialVehicle"]:
         if obj["specialVehicle"]["emergencyContainer"]["lightBarSirenInUse"]["lightBarActivated"] == True:
@@ -128,7 +128,8 @@ def on_message(client, userdata, msg):
             amb_lat = obj["latitude"]
             amb_lon = obj["longitude"]
             amb_heading = obj["heading"]
-            update_coordinates("192.168.98.20", amb_lat, amb_lon)
+            amb_stationID = obj["stationID"]
+            update_coordinates(amb_stationID, amb_lat, amb_lon)
 
     if "fields" in obj and "denm" in obj["fields"]:
         if obj["fields"]["denm"]["situation"]["eventType"]["causeCode"] == 95:
@@ -136,10 +137,10 @@ def on_message(client, userdata, msg):
                 position = determine_position(amb_lat, amb_lon, car_lat, car_lon, car_heading)
                 if position in ["Car on the same lane but in front", "Car on the opposite lane in front"]:
                     #print('CAR SHOULD REACT')
-                    update_frontCarMessage("Car 3 in front of ambulance swerve", "192.168.98.30")
+                    update_frontCarMessage("Car 3 in front of ambulance swerve", "3")
                     notify_car_reaction()
                 else:
-                    update_frontCarMessage("Not in front", "192.168.98.30")
+                    update_frontCarMessage("Not in front", "3")
                     
 # Generate CAMs with coordinates in violatingCarCoordinates.csv
 def generate():

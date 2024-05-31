@@ -6,11 +6,13 @@ from time import sleep
 import csv
 import math
     
+violation_count = {}
+
 # Function to update coordinates in the database
-def update_violations(violation_type, ip):
+def update_violations(violation_type, id):
     db = sql.connect('../obu.db')
     cursor = db.cursor()
-    cursor.execute("UPDATE violations SET violation_type = ? WHERE ip = ?", (violation_type, ip))
+    cursor.execute("UPDATE violations SET violation_type = ? WHERE stationID = ?", (violation_type, id))
     db.commit()
     db.close()
 
@@ -32,7 +34,7 @@ previous_ambulance_coordinates = None
 previous_ambulance_heading = 0
 ambulance_heading = 0
 
-violation_count = 0
+# violation_count = 0
 distance_threshold = 0.005  # 5 meters
 
 
@@ -135,23 +137,28 @@ def on_message(client, userdata, msg):
                 distance = haversine_distance(other_car_coordinates[0], other_car_coordinates[1], ambulance_coordinates[0], ambulance_coordinates[1])
 
                 if distance < distance_threshold:
-                    violation_count += 1
+                    if stationID not in violation_count:
+                        violation_count[stationID] = 0
+                    violation_count[stationID] += 1
                 else:
-                    violation_count = 0
+                    if stationID in violation_count:
+                        del violation_count[stationID]
                 
-                if violation_count >= 10:
-                    update_violations(f"Car {stationID} behind the ambulance", "192.168.98.10")
+                
+                if stationID in violation_count:
+                    print("vvvvvvv ",violation_count)
+                    if violation_count[stationID] >= 20:
+                        update_violations(f"Car {stationID} behind the ambulance", stationID)
 
-                    f = open('in_denm_ambulance2.json')
-                    violation_alert = json.load(f)
-                    violation_alert["latitude"] = ambulance_coordinates[0]
-                    violation_alert["longitude"] = ambulance_coordinates[1]
-                    violation_alert = json.dumps(violation_alert)
-                    client.publish("vanetza/in/denm", violation_alert)
-                    f.close()
-                    violation_count = 0
-
-            
+                        f = open('in_denm_ambulance2.json')
+                        violation_alert = json.load(f)
+                        violation_alert["latitude"] = ambulance_coordinates[0]
+                        violation_alert["longitude"] = ambulance_coordinates[1]
+                        violation_alert = json.dumps(violation_alert)
+                        client.publish("vanetza/in/denm", violation_alert)
+                        f.close()
+                        del violation_count[stationID]
+                
 
 # Generate CAMs with coordinates in emergencyVehicleCoordinates.csv
 def generate():

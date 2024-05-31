@@ -51,14 +51,14 @@ function obuCall() {
             let ambulanceBounds = []; // Array to store ambulance marker positions
             response.forEach(function(data) {
                 if (data[0] !== null && data[1] !== null) {
-                    if (data[2] == "192.168.98.30" || data[2] == "192.168.98.40")
+                    if (data[2] == 3 || data[2] == 4)
                         obuIcon = obuIconFrontCar;
-                    else if (data[2] == "192.168.98.20") {
+                    else if (data[2] == 2) {
                         obuIcon = obuIconAmbulance;
                         // Store the position of the ambulance marker
                         ambulanceBounds.push([data[0], data[1]]);
                     }
-                    else if (data[2] == "192.168.98.10")
+                    else if (data[2] == 1)
                         obuIcon = obuIconViolatingCar;
                     markers[i] = L.marker([data[0], data[1]], {icon: obuIcon}).addTo(map)
                         .bindTooltip(data[2], {permanent: false});

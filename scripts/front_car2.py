@@ -21,10 +21,10 @@ def read_coordinates(csv_file):
             coordinates.append((float(row['latitude']), float(row['longitude'])))
     return coordinates
 
-def update_frontCarMessage(swerve_type, ip):
+def update_frontCarMessage(swerve_type, id):
     db = sql.connect('../obu.db')
     cursor = db.cursor()
-    cursor.execute("UPDATE swerve SET swerve_type = ? WHERE ip = ?", (swerve_type, ip))
+    cursor.execute("UPDATE swerve SET swerve_type = ? WHERE stationID = ?", (swerve_type, id))
     db.commit()
     db.close()
 
@@ -102,10 +102,10 @@ def on_connect(client, userdata, flags, rc, properties):
 
 
 # Function to update coordinates in the database
-def update_coordinates(ip, latitude, longitude):
+def update_coordinates(id, latitude, longitude):
     db = sql.connect('../obu.db')
     cursor = db.cursor()
-    cursor.execute("UPDATE obu SET lat = ?, long = ? WHERE ip = ?", (latitude, longitude, ip))
+    cursor.execute("UPDATE obu SET lat = ?, long = ? WHERE stationID = ?", (latitude, longitude, id))
     db.commit()
     db.close()
 
@@ -120,7 +120,7 @@ def on_message(client, userdata, msg):
             car_lat = obj["latitude"]
             car_lon = obj["longitude"]
             car_heading = obj["heading"]
-            update_coordinates("192.168.98.40", car_lat, car_lon)
+            update_coordinates(4, car_lat, car_lon)
 
     if "specialVehicle" in obj and "emergencyContainer" in obj["specialVehicle"]:
         if obj["specialVehicle"]["emergencyContainer"]["lightBarSirenInUse"]["lightBarActivated"] == True:
@@ -136,10 +136,10 @@ def on_message(client, userdata, msg):
                 position = determine_position(amb_lat, amb_lon, car_lat, car_lon, car_heading)
                 if position in ["Car on the same lane but in front", "Car on the opposite lane in front"]:
                     #print('CAR SHOULD REACT')
-                    update_frontCarMessage("Car 4 in front of ambulance swerve", "192.168.98.40")
+                    update_frontCarMessage("Car 4 in front of ambulance swerve", "4")
                     notify_car_reaction()
                 else:
-                    update_frontCarMessage("Not in front", "192.168.98.40")
+                    update_frontCarMessage("Not in front", "4")
                     
 # Generate CAMs with coordinates in violatingCarCoordinates.csv
 def generate():
