@@ -35,7 +35,7 @@ previous_ambulance_heading = 0
 ambulance_heading = 0
 
 # violation_count = 0
-distance_threshold = 0.005  # 5 meters
+distance_threshold = 0.012  # 12 meters
 
 
 def haversine_distance(lat1, lon1, lat2, lon2):
@@ -131,7 +131,7 @@ def on_message(client, userdata, msg):
 
             client.publish("vanetza/in/denm",swerve_alert)
             f.close()
-            
+
             if is_behind(ambulance_coordinates[0], ambulance_coordinates[1], ambulance_heading, other_car_coordinates[0], other_car_coordinates[1]):
                 # Comparar coordenadas recebidas com coordenadas do ficheiro CSV
                 distance = haversine_distance(other_car_coordinates[0], other_car_coordinates[1], ambulance_coordinates[0], ambulance_coordinates[1])
@@ -147,6 +147,7 @@ def on_message(client, userdata, msg):
                 
                 if stationID in violation_count:
                     print("vvvvvvv ",violation_count)
+                    update_violations(None, stationID)
                     if violation_count[stationID] >= 20:
                         update_violations(f"Car {stationID} behind the ambulance", stationID)
 
@@ -158,6 +159,7 @@ def on_message(client, userdata, msg):
                         client.publish("vanetza/in/denm", violation_alert)
                         f.close()
                         del violation_count[stationID]
+                    
                 
 
 # Generate CAMs with coordinates in emergencyVehicleCoordinates.csv

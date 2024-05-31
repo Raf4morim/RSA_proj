@@ -29,7 +29,6 @@ var obuIconViolatingCar = L.icon({
 var markers = [];
 
 let popUpFlag = 0;
-let notificationClosed = false;
 let n = 0;
 
 setInterval(obuCall, 500);
@@ -90,7 +89,7 @@ function obuViolation() {
             // show popup with data[2] message
             console.log(response);
             console.log("BEHINDDD: "+ response[0][0]);
-            if (!notificationClosed && response[0][0].includes("behind the ambulance")) {
+            if (response[0][0].includes("behind the ambulance")) {
                 showNotification(response[0][0]);
             }
         }

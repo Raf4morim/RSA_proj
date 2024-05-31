@@ -17,7 +17,7 @@ def generate_coordinates(starting_point, speed, time_interval, num_points, beari
 
 starting_points = [
     Point(40.748817, -73.985428),  # ambulance
-    Point(40.74878097988277,-73.985428),  # violating car (4 meters behind the ambulance)
+    Point(40.74872694970647,-73.985428),  # violating car (10 meters behind the ambulance)
     Point(40.75241901058529,-73.985428),  # car in front (400 meters ahead)
     Point(40.746989, -73.985428),  # car in back (300 meters behind the ambulance)
     Point(40.751645, -73.985428)   # car coming from opposite direction (300 meters ahead)
@@ -25,7 +25,7 @@ starting_points = [
 
 bearings = [0, 0, 0, 0, 180]
 
-speeds = [70, 70, 40, 70, 70]
+speeds = [70, 70, 40, 70, 40]
 
 num_points = 100  
 messsage_interval = 0.5

@@ -66,11 +66,11 @@ def calculate_bearing(lat1, lon1, lat2, lon2):
 def determine_position(ambulance_lat, ambulance_lon, car_lat, car_lon, car_heading):
     bearing_to_ambulance = calculate_bearing(car_lat, car_lon, ambulance_lat, ambulance_lon)
     angle_diff = (bearing_to_ambulance - car_heading + 360) % 360
-    distance = haversine_distance(car_lat, car_lon, ambulance_lat, ambulance_lon)
+    # distance = haversine_distance(car_lat, car_lon, ambulance_lat, ambulance_lon)
 
-    #print('Heading: ' + str(car_heading))
-    if distance < 0.1:  # Ignore if the distance is less than 100 meters to avoid close proximity errors
-        return None
+    # #print('Heading: ' + str(car_heading))
+    # if distance < 0.1:  # Ignore if the distance is less than 100 meters to avoid close proximity errors
+    #     return None
 
     #print('Angle diff: ' + str(angle_diff))
     #print('Bearing to ambulance: ' + str(bearing_to_ambulance))
