@@ -114,7 +114,6 @@ def on_message(client, userdata, msg):
     global amb_lat, amb_lon, amb_heading, car_lat, car_lon, car_heading
     message = msg.payload.decode('utf-8')
     obj = json.loads(message)
-
     if "latitude" in obj and "longitude" in obj and "heading" in obj:
         if obj["stationID"] == 3:
             #print("Received CAM from station 3")
@@ -137,8 +136,10 @@ def on_message(client, userdata, msg):
                 position = determine_position(amb_lat, amb_lon, car_lat, car_lon, car_heading)
                 if position in ["Car on the same lane but in front", "Car on the opposite lane in front"]:
                     #print('CAR SHOULD REACT')
-                    update_frontCarMessage("Car in front of ambulance swerve", "192.168.98.30")
+                    update_frontCarMessage("Car 3 in front of ambulance swerve", "192.168.98.30")
                     notify_car_reaction()
+                else:
+                    update_frontCarMessage("Not in front", "192.168.98.30")
                     
 # Generate CAMs with coordinates in violatingCarCoordinates.csv
 def generate():

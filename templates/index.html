@@ -26,7 +26,7 @@
         }
         #notificationSwerve {
             position: fixed;
-            bottom: 20px;
+            bottom: 70px;
             left: 20px;
             padding: 15px;
             background-color: rgba(0, 119, 255, 0.8);
@@ -44,6 +44,15 @@
             font-weight: bold;
             font-size: 16px;
         }
+        #notificationSwerve .close-btn {
+            margin-left: 10px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
@@ -51,6 +60,7 @@
     <div id="map"></div>
     <div id="notificationSwerve" >
         <span id="notification-messageSwerve"></span>
+        <button class="close-btn" onclick="closeNotificationSwerve()">×</button>
     </div>
     <div id="notification">
         <span id="notification-message"></span>

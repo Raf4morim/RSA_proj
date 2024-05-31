@@ -30,6 +30,7 @@ var markers = [];
 
 let popUpFlag = 0;
 let notificationClosed = false;
+let n = 0;
 
 setInterval(obuCall, 500);
 setInterval(obuViolation, 500);
@@ -88,8 +89,8 @@ function obuViolation() {
             // See if data is not empty
             // show popup with data[2] message
             console.log(response);
-
-            if (!notificationClosed && response[0][0].includes("behind the ambulance") && popUpFlag == 0) {
+            console.log("BEHINDDD: "+ response[0][0]);
+            if (!notificationClosed && response[0][0].includes("behind the ambulance")) {
                 showNotification(response[0][0]);
             }
         }
@@ -104,19 +105,34 @@ function obuFrontCar() {
         success: function(response) {
             // See if data is not empty
             // show popup with data[2] message
-            console.log(response);
+            // console.log(response);
 
-            if (response[0][0].includes("in front of ambulance swerve")) {
-                showNotificationSwerve(response[0][0]);
-            }
+            //console.log("AAAAAAAAAAAA" + response[0][0]);
+            console.log("AAAAAAAAAAAA" + response);
+            response.forEach(function(item) {
+                console.log("CARROS Á FRENTE: "+item[0]);
+                if (item[0].includes("in front of ambulance swerve")) {
+                    showNotificationSwerve(item[0],6);
+                }
+            });
         }
     });
 }
 
-function showNotificationSwerve(message) {
+function showNotificationSwerve(message,n) {
     var notification = document.getElementById('notificationSwerve');
     var notificationMessage = document.getElementById('notification-messageSwerve');
-    notificationMessage.innerText = message;
+    
+    // Check if the number of paragraphs exceeds the limit
+    if (notificationMessage.children.length >= n) {
+        // Reset the notification content
+        notificationMessage.innerText = message + '\n';
+    } else {
+        // Append the new message to the existing content
+        notificationMessage.innerText += message + '\n';
+    }
+ 
+    // Ensure the notification is displayed
     notification.style.display = 'block';
 }
 
@@ -129,6 +145,12 @@ function showNotification(message) {
 
 function closeNotification() {
     var notification = document.getElementById('notification');
+    notification.style.display = 'none';
+    notificationClosed = true;  // Set flag to prevent future notifications
+}
+
+function closeNotificationSwerve() {
+    var notification = document.getElementById('notificationSwerve');
     notification.style.display = 'none';
     notificationClosed = true;  // Set flag to prevent future notifications
 }
