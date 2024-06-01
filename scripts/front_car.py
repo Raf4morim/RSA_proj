@@ -13,12 +13,12 @@ sys.path.append('..')
 from app import notify_car_reaction
 
 # Ler coordenadas do ficheiro CSV
-def read_coordinates(csv_file):
+def read_coordinates_and_heading(csv_file):
     coordinates = []
     with open(csv_file, mode='r') as file:
         reader = csv.DictReader(file)
         for row in reader:
-            coordinates.append((float(row['latitude']), float(row['longitude'])))
+            coordinates.append((float(row['latitude']), float(row['longitude']), float(row['heading'])))
     return coordinates
 
 # Function to update coordinates in the database
@@ -38,7 +38,7 @@ def update_coordinates(id, latitude, longitude):
     db.close()
 
 # TODO - Modify to have all 4 possible cases of coordinates
-front_car_coordinates = read_coordinates('carInFrontCoordinates.csv')
+front_car_coordinates = read_coordinates_and_heading('carInFrontCoordinates.csv')
 # front_car_coordinates = read_coordinates('carInBack.csv')
 #front_car_coordinates = read_coordinates('carOppositeCoordinates.csv')
 idx = 0
@@ -78,7 +78,7 @@ def determine_position(ambulance_lat, ambulance_lon, car_lat, car_lon, car_headi
     angle_diff = (bearing_to_ambulance - car_heading + 360) % 360
     # distance = haversine_distance(car_lat, car_lon, ambulance_lat, ambulance_lon)
 
-    # #print('Heading: ' + str(car_heading))
+    #print('Heading: ' + str(car_heading))
     # if distance < 0.1:  # Ignore if the distance is less than 100 meters to avoid close proximity errors
     #     return None
 
@@ -137,7 +137,7 @@ def on_message(client, userdata, msg):
                 position = determine_position(amb_lat, amb_lon, car_lat, car_lon, car_heading)
                 if position in ["Car on the same lane but in front", "Car on the opposite lane in front"]:
                     #print('CAR SHOULD REACT')
-                    update_frontCarMessage("Car 3 in front of ambulance swerve", "3")
+                    update_frontCarMessage("Car 3 in front of ambulance should swerve", "3")
                     notify_car_reaction()
                 else:
                     update_frontCarMessage("Not in front", "3")
@@ -148,7 +148,7 @@ def generate():
     if idx >= len(front_car_coordinates):
         idx = 0 # Reset index
 
-    latitude, longitude = front_car_coordinates[idx]
+    latitude, longitude, heading = front_car_coordinates[idx]
     idx += 1
 
     f = open('in_cam.json')
@@ -156,7 +156,7 @@ def generate():
     m["latitude"] = latitude
     m["longitude"] = longitude
     m["stationID"] = 3
-    #m["heading"] = 180
+    m["heading"] = heading
 
     m = json.dumps(m)
     client.publish("vanetza/in/cam",m)

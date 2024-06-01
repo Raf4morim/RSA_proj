@@ -14,25 +14,23 @@ def update_coordinates(id, latitude, longitude):
     db.close()
 
 # Ler coordenadas do ficheiro CSV
-def read_coordinates(csv_file):
+def read_coordinates_and_heading(csv_file):
     coordinates = []
     with open(csv_file, mode='r') as file:
         reader = csv.DictReader(file)
         for row in reader:
-            coordinates.append((float(row['latitude']), float(row['longitude'])))
+            coordinates.append((float(row['latitude']), float(row['longitude']), float(row['heading'])))
     return coordinates
 
-violating_car_coordinates = read_coordinates('violatingCarCoordinates.csv')
+violating_car_coordinates = read_coordinates_and_heading('violatingCarCoordinates.csv')
 idx = 0
 
 # Get coordinates and car goes behind ambulance
 # Publishes CAMs and subscribes to DENMs
 def on_connect(client, userdata, flags, rc, properties):
     print("Connected with result code "+str(rc))
-    #client.subscribe("vanetza/out/cam")
     client.subscribe("vanetza/out/denm")
     client.subscribe("vanetza/in/cam")
-    # ...
 
 
 # É chamada automaticamente sempre que recebe uma mensagem nos tópicos subscritos em cima
@@ -50,17 +48,6 @@ def on_message(client, userdata, msg):
         if obj["fields"]["denm"]["situation"]["eventType"]["causeCode"] == 99:
             print('CAR VIOLATION ALERT RECEIVED! DENM')
     
-    # print('Topic: ' + msg.topic)
-    # print('Message' + message)
-
-    # obj = json.loads(message)
-
-    # lat = obj["latitude"]
-    # lon = obj["longitude"]
-
-    # print('Latitude: ' + str(lat))
-    # print('Longitude: ' + str(lon))
-
 
 # Generate CAMs with coordinates in violatingCarCoordinates.csv
 def generate():
@@ -68,13 +55,14 @@ def generate():
     if idx >= len(violating_car_coordinates):
         idx = 0 # Reset index
 
-    latitude, longitude = violating_car_coordinates[idx]
+    latitude, longitude, heading = violating_car_coordinates[idx]
     idx += 1
 
     f = open('in_cam.json')
     m = json.load(f)
     m["latitude"] = latitude
     m["longitude"] = longitude
+    m["heading"] = heading
 
     m = json.dumps(m)
     client.publish("vanetza/in/cam",m)

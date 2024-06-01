@@ -16,22 +16,21 @@ def update_violations(violation_type, id):
     db.commit()
     db.close()
 
-# Read coordinates
-def read_coordinates(csv_file):
+# Ler coordenadas do ficheiro CSV
+def read_coordinates_and_heading(csv_file):
     coordinates = []
     with open(csv_file, mode='r') as file:
         reader = csv.DictReader(file)
         for row in reader:
-            coordinates.append((float(row['latitude']), float(row['longitude'])))
+            coordinates.append((float(row['latitude']), float(row['longitude']), float(row['heading'])))
     return coordinates
 
-emergency_vehicle_coordinates = read_coordinates('emergencyVehicleCoordinates.csv')
+emergency_vehicle_coordinates = read_coordinates_and_heading('emergencyVehicleCoordinates.csv')
 idx = 0
 
 ambulance_coordinates = None
 other_car_coordinates = None
 previous_ambulance_coordinates = None
-previous_ambulance_heading = 0
 ambulance_heading = 0
 
 # violation_count = 0
@@ -88,7 +87,7 @@ def on_connect(client, userdata, flags, rc, properties):
 
 # Obter coordenadas nas mensagens CAM
 def on_message(client, userdata, msg):
-    global ambulance_heading, ambulance_coordinates, other_car_coordinates, idx, violation_count, previous_ambulance_coordinates, previous_ambulance_heading
+    global ambulance_heading, ambulance_coordinates, other_car_coordinates, idx, violation_count, previous_ambulance_coordinates
 
     message = msg.payload.decode('utf-8')
     obj = json.loads(message)
@@ -96,6 +95,7 @@ def on_message(client, userdata, msg):
     lat = obj["latitude"]
     lon = obj["longitude"]
     stationID = obj["stationID"]
+    heading = obj["heading"]
 
     #print('Received CAM from station ' + str(stationID) + ' with coordinates: ' + str(lat) + ', ' + str(lon))
 
@@ -103,13 +103,7 @@ def on_message(client, userdata, msg):
     # Station 2 is the ambulance
     if stationID == 2:
         ambulance_coordinates = (lat, lon)
-        # Calculate bearing comparing current coordinates with previous coordinates
-        if previous_ambulance_coordinates is not None:
-            ambulance_heading = calculate_bearing(previous_ambulance_coordinates[0],previous_ambulance_coordinates[1],lat,lon)
-            previous_ambulance_heading = ambulance_heading
-        else:
-            ambulance_heading = previous_ambulance_heading
-        previous_ambulance_coordinates = (lat,lon)
+        ambulance_heading = heading
     else:
         other_car_coordinates = (lat, lon)
 
@@ -168,13 +162,14 @@ def generate():
     if idx >= len(emergency_vehicle_coordinates):
         idx = 0 # Reset index
 
-    latitude, longitude = emergency_vehicle_coordinates[idx]
+    latitude, longitude, heading = emergency_vehicle_coordinates[idx]
     idx += 1
 
     f = open('in_cam_ambulance.json')
     m = json.load(f)
     m["latitude"] = latitude
     m["longitude"] = longitude
+    m["heading"] = heading
 
     m = json.dumps(m)
     client.publish("vanetza/in/cam",m)
