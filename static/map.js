@@ -1,4 +1,4 @@
-var map = L.map('map').setView([40.748817, -73.985428], 16);
+var map = L.map('map').setView([40.6255656, -8.7194227], 16);
 
 L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -110,7 +110,7 @@ function obuFrontCar() {
             console.log("AAAAAAAAAAAA" + response);
             response.forEach(function(item) {
                 console.log("CARROS Á FRENTE: "+item[0]);
-                if (item[0].includes("in front of ambulance swerve")) {
+                if (item[0].includes("in front of ambulance should swerve")) {
                     showNotificationSwerve(item[0],6);
                 }
             });
